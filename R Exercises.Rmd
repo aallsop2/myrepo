@@ -44,3 +44,232 @@ ggplot(data = mpg) +
 
 
 ```
+
+
+
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+
+3.6.1.5
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+3.1.6.6
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x=displ, y = hwy), size = 5) +
+  geom_smooth(mapping = aes(x = displ, y = hwy), se = FALSE, size = 3)
+```
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 5) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv), se = FALSE, size = 3)
+```
+
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = drv), size = 5) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv, color = drv), se = FALSE, size = 3)
+```
+
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = drv), size = 5) +
+  geom_smooth(mapping = aes(x = displ, y = hwy), se = FALSE, size = 3)
+```
+
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = drv), size = 5) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv, linetype = drv), se = FALSE, size = 3)
+```
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, fill = drv), color = "White", size = 5, shape = 21, stroke = 5)
+
+```
+
+
+3.8.1.1
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()+
+  geom_jitter()
+```
+
+3.8.1.2
+"width" and "height" can be used as parameters to adjust the jitter.
+
+
+
+
+
+3.8.1.3
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point() + 
+  geom_count()
+```
+
+geom_count() makes the points bigger if there are multiple points on top of each other.
+
+
+
+3.8.1.4
+
+```{r}
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = class, y = hwy))
+```
+
+The default position adjustment is "dodge2". The boxplots are side-by-side boxplots.
+
+3.9.1.1
+
+
+```{r}
+
+ggplot(data = mpg) +
+  geom_bar(mapping = aes(x = class, fill = model), width = 1, show.legend = FALSE) + 
+  coord_flip() +
+  coord_polar()
+```
+
+
+5.2.4.1
+```{r}
+library(tidyverse)
+library(nycflights13)
+#1 Had an arrival delay of two or more hours
+filter(flights, arr_delay >= 2)
+
+#2 Flew to Houston (IAH or HOU)
+filter(flights, dest == "IAH" | dest == "HOU")
+
+#3 Were operated by United, American, or Delta
+filter(flights, carrier == "DL" | carrier == "AA" | carrier == "UA")
+
+#4 Departed in summer (July, August, and September)
+filter(flights, month == 7 | month == 8 | month == 9)
+
+#5 Arrived more than two hours late, but didn’t leave late
+filter(flights, dep_delay == 0 & arr_delay > 2)
+
+#6 Were delayed by at least an hour, but made up over 30 minutes in flight
+made_up <- flights$dep_delay - flights$arr_delay
+filter(flights, dep_delay > 1 & (dep_delay - arr_delay) > 30)
+
+#7 Departed between midnight and 6am (inclusive)
+filter(flights, dep_time >= 000 & dep_time <= 600 )
+```
+
+5.3.1.2
+
+```{r}
+arrange(flights, desc(dep_delay))
+arrange(flights, dep_delay)
+```
+
+5.6.7.2
+
+```{r}
+not_cancelled %>% count(dest)
+
+not_cancelled %>% 
+  group_by(dest) %>%
+  summarise(total = n())
+```
+
+
+```{r}
+not_cancelled %>% count(tailnum, wt = distance)
+
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(total = sum(distance))
+```
+
+
+Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+```{r}
+flights %>% 
+  group_by(day) %>%
+  summarise(cancelled = sum(is.na(dep_delay)) + sum(is.na(arr_delay)))
+```
+
+
+7.3.4.2
+Explore the distribution of price. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price), binwidth = 50)
+```
+
+There is a surprising gap around $1000 where the count is either 0 or very low.
+
+7.5.1.1.2
+What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+```{r}
+ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+I think that carat is the most important for predicting price.
+
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = carat, y = cut)) + 
+  geom_point() +
+  geom_jitter()
+
+ggplot(data = diamonds) +
+  geom_boxplot(mapping = aes(x = cut, y = carat))
+```
+
+For every cut there are many more diamonds with 0 to about 2 carats. Anything bigger than that doesn't have a whole lot of data points although fair has the most data points for larger carat diamonds. This helps explain why better quality diamonds are cheaper on average, it is because they tend to be smaller diamonds (fewer carats). The low quality cut diamonds (fair) tend to have bigger diamonds (more carats) making them more expensive.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
