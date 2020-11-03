@@ -11,8 +11,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-ggplot(data = mpg)
-mpg
 ```
 
 mpg has 234 rows and 11 columns.
@@ -251,10 +249,222 @@ ggplot(data = diamonds) +
 For every cut there are many more diamonds with 0 to about 2 carats. Anything bigger than that doesn't have a whole lot of data points although fair has the most data points for larger carat diamonds. This helps explain why better quality diamonds are cheaper on average, it is because they tend to be smaller diamonds (fewer carats). The low quality cut diamonds (fair) tend to have bigger diamonds (more carats) making them more expensive.
 
 
+12.2.1.2
+Compute the rate for table2. You will need to perform four operations:
+Extract the number of TB cases per country per year.
+Extract the matching population per country per year.
+Divide cases by population, and multiply by 10000.
+Store back in the appropriate place.
+```{r}
+library(tidyverse)
+table2
+
+cases_only <- filter(table2, type == 'cases')
+
+cases <- cases_only %>%
+  group_by(country) %>%
+  count(year, wt = count)
+
+pop_only <- filter(table2, type == 'population')
+
+pop <- pop_only %>%
+  group_by(country) %>%
+  count(year, wt = count)
+
+cases$n / pop$n * 10000
+
+cases_only %>%
+  mutate(population = pop$n) %>%
+  mutate(rate = cases$n / pop$n * 10000)
+
+```
+
+
+12.3.3.4
+Tidy the simple tibble below. Do you need to make it wider or longer? What are the variables?
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+
+preg
+
+tidy_preg <- preg %>%
+  pivot_longer(c(male,female), names_to = "gender", values_to = "count")
+
+tidy_preg
+```
+
+
+13.3.1.1
+Add a surrogate key to flights.
+```{r}
+library(nycflights13)
+key_flights <- flights %>%
+  mutate(surrogate_key = row_number())
+```
+
+13.4.6.2
+Add the location of the origin and destination (i.e. the lat and lon) to flights.
+```{r}
+airport_places <- airports %>%
+  select("faa", "lat", "lon")
+flights %>%
+  left_join(airport_places, c("dest" = "faa")) %>%
+  left_join(airport_places, c("origin" = "faa"))
+```
+
+
+13.5.1.2
+Filter flights to only show flights with planes that have flown at least 100 flights.
+```{r}
+num_flights <- flights %>%
+  filter(!is.na(tailnum)) %>%
+  count(tailnum, sort = TRUE)
+
+planes_100 <- filter(num_flights, n >= 100)
+
+flights %>%
+  semi_join(planes_100)
+```
+
+13.5.1.3
+Combine fueleconomy::vehicles and fueleconomy::common to find only the records for the most common models.
+```{r}
+library(fueleconomy)
+vehicles %>%
+  semi_join(common)
+```
+
+14.3.2.1.1
+
+```{r}
+x <- "$^$"
+x
+
+str_view(x, "\\$\\^\\$")
+```
+
+
+14.3.2.1.2
+start with y
+```{r}
+str_view(words, "^y", match = TRUE)
+```
+
+end with x
+```{r}
+str_view(words, "x$", match = TRUE)
+```
+
+Are exactly 3 letters long
+```{r}
+str_view(words, "^...$", match = TRUE)
+```
+
+Have 7 letters or more
+```{r}
+str_view(words, "^.......", match = TRUE)
+```
+
+```{r}
+str_view(c("aa11", "aaa", "aaa11"), "(.)\1\1", match = TRUE)
+```
+
+14.4.2.1.2
+From the Harvard sentences data, extract:
+The first word from each sentence.
+```{r}
+head(str_extract(sentences, "[A-Za-z]+"))
+```
+
+
+14.4.4.1.2
+Implement a simple version of str_to_lower() using replace_all().
+
+```{r}
+smaller_sentences <- sentences %>%
+  head(15)
+str_replace_all(smaller_sentences, c("A" = "a", "B" = "b", "C" = "c", "D" = "d", "E" = "e",
+                                     "F" = "f", "G" = "g", "H" = "h", "I" = "i", "J" = "j",
+                                     "K" = "k", "L" = "l", "M" = "m", "N" = "n", "O" = "o",
+                                     "P" = "p", "Q" = "q", "R" = "r", "S" = "s", "T" = "t",
+                                     "U" = "u", "V" = "v", "W" = "w", "X" = "x", "Y" = "y",
+                                     "Z" = "z"))
+```
+
+
+15.3.1.1
+Explore the distribution of rincome (reported income). What makes the default bar chart hard to understand? How could you improve the plot?
+```{r}
+ggplot(gss_cat) +
+  geom_bar(mapping = aes(rincome)) +
+  coord_flip()
+```
+
+The default bar chart has the income level labels overlapping thus making them impossible to read. Flipping the income levels to the y axis fixes this problem.
 
 
 
 
+15.3.1.2
+What is the most common relig in this survey? What’s the most common partyid?
+```{r}
+ggplot(gss_cat) +
+  geom_bar(mapping = aes(relig)) +
+  coord_flip()
+```
+
+Protestant is the most common religion.
+
+
+
+19.2.1.3
+Practice turning the following code snippets into functions. Think about what each function does. What would you call it? How many arguments does it need? Can you rewrite it to be more expressive or less duplicative?
+
+```{r}
+# mean(is.na(x))
+
+mean_na <- function(x){
+  mean(is.na(x))
+}
+mean_na(c(NA, 3, 4, 9, 9, NA))
+
+# x / sum(x, na.rm = TRUE)
+
+prop_func <- function(x) {
+  x / sum(x, na.rm = TRUE)
+}
+prop_func(c(30, 20, 10, NA, 0, NA, 20))
+
+
+# sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)
+
+coef_variation <- function(x) {
+  sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)
+} 
+coef_variation(c(3, 2, 9, 4, 13, 8, 3, 4, 5, 2))
+```
+
+19.2.1.4
+write your own functions to compute the variance and skewness of a numeric vector.
+```{r}
+computer_var <- function(x) {
+  n <- length(x)
+  xbar <- sum(x) / n
+  1 / (n - 1) * sum(x - xbar) ^ 2
+}
+
+compute_skew <- function(x) {
+  n <- length(x)
+  xbar <- sum(x) / n
+  (1 / (n - 2) * sum(x - xbar) ^ 3) / var(x) ^ (3/2)
+}
+
+```
 
 
 
